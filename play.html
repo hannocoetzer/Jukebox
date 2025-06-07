@@ -1,0 +1,89 @@
+﻿<html>
+<head>
+<title>Play music</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+  .glyphicon {
+    font-size: 100px;
+}
+  .icon-button {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    border: 0;
+    background: transparent;
+	color:white;
+}
+  </style>
+<script>
+$(document).ready(function(){
+debugger;
+
+
+	var playCommand = "";
+	
+	
+	function PlayServiceUpdate()
+	{
+		var PlayString = $('#PlayString').val();
+		
+		var playJSON = Object();
+		playJSON.PlayString = PlayString;
+		playJSON.PlayCommand = PlayCommand;
+	 
+		 $.ajax({
+			url: 'func.php',
+			type: 'post',
+			data: { "PlayServiceUpdate": JSON.stringify(playJSON)},
+			success: function(response) { /*alert(response);*/ }
+		});		
+	}
+
+	$('#PlayButtton').click(function() {
+		PlayCommand = "Play";
+		PlayServiceUpdate();
+	});
+	
+	$('#StopButtton').click(function() {
+		PlayCommand = "Stop";
+		PlayServiceUpdate();		
+	});
+
+	$('#SkipButtton').click(function () {
+	    PlayCommand = "Skip";
+	    PlayServiceUpdate();
+	});
+});
+</script>
+</head>
+<body style="background-color:#001a33;">
+	<div class="container-fluid page-top">
+	</br>
+	</br>
+	</br>
+		<div class="row">	
+			<form>
+				<div class="form-group">
+			  <input type="text" class="form-control" id="PlayString">
+				</div>
+			</form>
+		</div>	
+		<div class="row">
+			<button id="StopButtton" type="button"  class="icon-button">
+				<span class="glyphicon glyphicon-stop"></span>&nbsp;
+			</button>
+			<button id="PlayButtton" type="button"  class="icon-button">
+				<span class="glyphicon glyphicon-play-circle"></span>&nbsp;
+			</button>
+            <button id="SkipButtton" type="button" class="icon-button">
+                <span class="glyphicon glyphicon-forward"></span>&nbsp;
+            </button>
+		</div>
+	</div>
+</body>
