@@ -32,18 +32,18 @@ conn = sqlite3.connect("play_stream.db", check_same_thread=False)
 c = conn.cursor()
 
 def getPlayString():
-    c.execute("SELECT PlayString FROM posts Order by created_at DESC LIMIT 1")
-    myList = c.fetchone()
-    return myList[0]
-    #with open('playnow.txt', 'r', encoding='utf-8') as file:
-    #    return file.read()
+#    c.execute("SELECT PlayString FROM posts Order by created_at DESC LIMIT 1")
+#    myList = c.fetchone()
+#    return myList[0]
+    with open('playnow.txt', 'r', encoding='utf-8') as file:
+        return file.read()
 
 def getPlayCommand():
-    c.execute("SELECT PlayCommand FROM posts Order by created_at DESC LIMIT 1")
-    myList = c.fetchone()
-    return myList[0]
-    #with open('commands.txt', 'r', encoding='utf-8') as file:
-    #    return file.read()
+    #c.execute("SELECT PlayCommand FROM posts Order by created_at DESC LIMIT 1")
+    #myList = c.fetchone()
+    #return myList[0]
+    with open('commands.txt', 'r', encoding='utf-8') as file:
+        return file.read()
 
 
 def readStream():
@@ -87,7 +87,34 @@ def startMainLoop():
             try:
                 #-- Building command
                 if platform == "linux" or platform == "linux2":
-                    command = "youtube-dl -o - -f 'bestaudio[filesize<100M]' -f m4a --match-filter 'duration > 50' 'ytsearch" + skipValue + ":" + Playstring + "' | mplayer -slave -input file=/tmp/pipe -vo fbdev2 -zoom -xy 1920 -cache 30720 -cache-min 2 /dev/fd/3 3<&0 </dev/tty "
+                    #command = "youtube-dl -o - -f 'bestaudio[filesize<100M]' -f m4a --match-filter 'duration > 50' 'ytsearch" + skipValue + ":" + Playstring + "' | mplayer -slave -input file=/tmp/pipe -vo fbdev2 -zoom -xy 1920 -cache 30720 -cache-min 2 /dev/fd/3 3<&0 </dev/tty "
+                    
+                    #command = "yt-dlp_linux -o - -f \"m4a[filesize<100M]/m4a\" " \
+          #+ "--match-filter \"duration > 120\" --min-views 50000 " \
+          #+ "\"ytsearch" + str(skipValue) + ":" + Playstring + "\" | " \
+          #+ "\"mplayer\" - --play-and-exit"
+                    #command = "yt-dlp_linux --extract-audio "\
+                    #            + " --audio-format mp3 "\
+                    #            + " --match-filter duration > 120"\
+                    #            + " --min-views 50000 "\
+                    #            + " --default-search ytsearch" + str(skipValue) + ""\
+                    #            + " --exec vlc {} --play-and-exit "\
+                    #            + Playstring
+                    command = (
+                                    "yt-dlp_linux "
+                                    "--extract-audio "
+                                    "--audio-format mp3 "
+                                    "--match-filter \"duration > 120\" "
+                                    "--min-views 50000 "
+                                    f"--default-search ytsearch{skipValue} "
+                                    "--exec \"vlc {} --play-and-exit\" "
+                                    f"{Playstring}"
+                                )
+                    print(command)
+                    subprocess.run(command, shell=True)
+
+
+                
                 elif platform == "win32":
                     command = "youtube-dl -o - -f \"bestaudio[filesize<100M]\" -f m4a --match-filter \"duration > 50\""
                     command = command + " --min-views 50000 --playlist-start " + str(skipValue) +" \"ytsearch" + str(skipValue) + ":" + Playstring + "\" | vlc - --play-and-exit"
@@ -145,6 +172,7 @@ def playStuff(Playstring, q):
           + "--match-filter \"duration > 120\" --min-views 50000 " \
           + "\"ytsearch" + str(skipValue) + ":" + Playstring + "\" | " \
           + "\"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" - --play-and-exit"
+        print(command);
         subie = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         q.put(subie)
 
