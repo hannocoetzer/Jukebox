@@ -100,6 +100,7 @@ def startMainLoop():
                     #            + " --default-search ytsearch" + str(skipValue) + ""\
                     #            + " --exec vlc {} --play-and-exit "\
                     #            + Playstring
+                    # "yt-dlp_linux --extract-audio --audio-format mp3 --match-filter "duration > 120" --min-views 50000 --default-search ytsearch5 --exec "vlc {} --play-and-exit" "nirvana" 
                     command = (
                                     "yt-dlp_linux "
                                     "--extract-audio "
