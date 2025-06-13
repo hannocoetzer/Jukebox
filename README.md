@@ -22,5 +22,16 @@ php -S localhost:8000
 python3 play.py
 browse to http://localhost/play.html
 
-*Further reading and optimisation*
+*Smart randomized playlist*
+pip install openai
+export OPENAI_API_KEY="your key"
+sudo apt install pipx
+pipx install openai
+or
+install openai --break-system-packages
+
+
+
+F*urther reading and optimisation*
+
 https://github.com/yt-dlp/yt-dlp
