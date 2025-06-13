@@ -67,9 +67,8 @@ def startMainLoop():
 
     PlayCommand = 'Play'
     Playstring = getPlayString()
+    latestPlaystring = None
     skipValue = 1
-    amount = 200
-    playListIndex = 1
     alreadySkipped = False
 
     print("Key input started. Press 'd' to skip, 'q' to quit")
@@ -82,7 +81,8 @@ def startMainLoop():
             command = (
                 "yt-dlp_linux "
                 "--match-filter \"duration > 120\" "
-                "--min-views 50000 "
+                "--match-filter \"duration < 600\" "
+                "--match-filter \"view_count > 300000\" "    
                 "--default-search ytsearch100 "
                 f"--playlist-items {skipValue} "
                 "-f \"bestaudio[ext=m4a]\" "
@@ -112,9 +112,13 @@ def startMainLoop():
 
             # Monitor the process
             while current_process.poll() is None:
-                Playstring = getPlayString()
+
+                latestPlaystring = getPlayString()
                 PlayCommand = getPlayCommand()
 
+                if Playstring != latestPlaystring :
+                    skipValue = 1
+                    Playstring = latestPlaystring
 
                 if vlc_process is None:
                     vlc_process = find_vlc_process()
@@ -143,9 +147,6 @@ def startMainLoop():
                         break
                 time.sleep(0.1)
 
-            skipValue += 1
-            amount -= 1
-
     except KeyboardInterrupt:
         print("Interrupted")
     finally:
@@ -153,16 +154,6 @@ def startMainLoop():
             current_process.terminate()
         key_input.stop()
         print("Cleaned up")
-
-def playStuff(Playstring, q):
-    skipValue = 5
-    command = ("yt-dlp -o - -f \"m4a[filesize<100M]/m4a\" "
-             "--match-filter \"duration > 120\" --min-views 50000 "
-             f"\"ytsearch{skipValue}:{Playstring}\" | "
-             "\"C:\\Program Files\\VideoLAN\\VLC\\vlc.exe\" - --play-and-exit")
-    print(command)
-    subie = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
-    q.put(subie)
 
 # Start the main loop
 if __name__ == "__main__":

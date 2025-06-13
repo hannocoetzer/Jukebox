@@ -22,3 +22,6 @@ cd /PyPlayer
 1169  php -S localhost:8000
 run > python3 play.py
 browse to http://localhost/play.html
+
+*Further reading and optimisation*
+https://github.com/yt-dlp/yt-dlp
