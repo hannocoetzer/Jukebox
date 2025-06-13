@@ -1,4 +1,3 @@
-
 <?php
 
 if (isset($_POST['PlayServiceUpdate'])) {
@@ -27,11 +26,8 @@ CREATE TABLE IF NOT EXISTS posts (
 SQL;
     $db->exec($sql);
   
-    $data = array(
-        'Test '.rand(0, 10),
-        'Data: '.uniqid(),
-        'Date: '.date('d.m.Y H:i:s')
-    );
+    // Fix: Store time() result in a variable
+    $currentTime = time();
   
     $sql = <<<SQL
 INSERT INTO posts (PlayString,PlayCommand, created_at)
@@ -39,21 +35,23 @@ VALUES (:PlayString, :PlayCommand, :created_at)
 SQL;
   
     $stmt = $db->prepare($sql);
-    foreach ($data as $PlayString) {
-        $stmt->bindParam(':PlayString', $request->PlayString);
-		$stmt->bindParam(':PlayCommand', $request->PlayCommand);
-        $stmt->bindParam(':created_at', time());
-  
-        $stmt->execute();
-    }
+    
+    // Fix: Bind the actual values from the request, not the unused $data array
+    $stmt->bindParam(':PlayString', $request->PlayString);
+    $stmt->bindParam(':PlayCommand', $request->PlayCommand);
+    $stmt->bindParam(':created_at', $currentTime);
+    
+    // Execute once with the actual data
+    $stmt->execute();
   
     $result = $db->query('SELECT * FROM posts');
   
     foreach($result as $row) {
-        list($id, $PlayString, $createdAt) = $row;
+        // Fix: Include PlayCommand in the list destructuring
+        list($id, $PlayString, $PlayCommand, $createdAt) = $row;
         $output  = "Id: $id <br/>\n";
         $output .= "PlayString: $PlayString<br/>\n";
-		$output .= "PlayCommand: $PlayCommand<br/>\n";
+        $output .= "PlayCommand: $PlayCommand<br/>\n";
         $output .= "Created at: ".date('d.m.Y H:i:s', $createdAt)."<br/>\n";
   
         echo $output;
@@ -61,10 +59,9 @@ SQL;
   
     //$db->exec("DROP TABLE posts");
 } catch(PDOException $e) {
-    echo $e->getPlayString();
+    echo $e->getMessage();  // Fix: Use getMessage() instead of getPlayString()
     echo $e->getTraceAsString();
 }
  }
-
 
 ?>
