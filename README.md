@@ -32,9 +32,13 @@ install openai --break-system-packages
 
 *Local radio setup with Streaming to browser with icecast2*
 sudo apt install icecast2
-sudo systemctl restart icecast2
 sudo nano /etc/icecast2/icecast.xml
+<listen-socket>
+  <port>8000</port>
+  <bind-address>0.0.0.0</bind-address>
+</listen-socket>
 
+sudo systemctl restart icecast2
 
 F*urther reading and optimisation*
 

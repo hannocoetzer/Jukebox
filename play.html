@@ -59,6 +59,34 @@ debugger;
 	    PlayCommand = "Skip";
 	    PlayServiceUpdate();
 	});
+
+  const audio = document.getElementById('radio');
+  const streamUrl = "http://192.168.0.105:8000/stream.mp3";
+
+  function reloadStream() {
+    console.log("🔁 Reloading stream...");
+    // Pause, reset src with cache-busting query, reload
+    audio.pause();
+    audio.src = streamUrl + "?t=" + new Date().getTime(); // Cache-busting
+    audio.load();
+    audio.play().catch(err => console.log("⚠️ Play error:", err));
+  }
+
+  // Try to reload if the stream errors or ends
+  audio.addEventListener('error', () => {
+    console.log("⚠️ Audio error detected");
+    setTimeout(reloadStream, 2000);
+  });
+
+  audio.addEventListener('stalled', () => {
+    console.log("⏳ Audio stalled");
+    setTimeout(reloadStream, 2000);
+  });
+
+  audio.addEventListener('ended', () => {
+    console.log("🔚 Stream ended");
+    setTimeout(reloadStream, 2000);
+  });
 });
 </script>
 </head>
@@ -85,9 +113,13 @@ debugger;
                 <span class="glyphicon glyphicon-forward"></span>&nbsp;
             </button>
 		</div>
-    <audio controls autoplay>
+    <!--<audio controls autoplay>
       <source src="http://localhost:8000/stream.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
-      </audio>
+      </audio>-->
+     <audio id="radio" controls autoplay>
+      <source src="http://localhost:8000/stream.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+       </audio>
 	</div>
 </body>
