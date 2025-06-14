@@ -38,6 +38,33 @@ sudo nano /etc/icecast2/icecast.xml
   <bind-address>0.0.0.0</bind-address>
 </listen-socket>
 
+then 
+
+
+
+sudo apt update
+sudo apt install avahi-daemon
+sudo systemctl enable avahi-daemon
+
+sudo chmod +x update-dns.sh
+sudo ./update-dns.sh
+sudo nano /etc/avahi/avahi-daemon.conf
+[server]
+host-name=pyplayer
+domain-name=local
+
+[public]
+publish-addresses=yes
+publish-hinfo=yes
+publish-workstation=yes
+
+sudo systemctl start avahi-daemon
+
+#hostname
+#sudo hostnamectl set-hostname pyplayer
+#edit the hostname with "sudo nano /etc/hosts" hit ctrl X
+
+
 sudo systemctl restart icecast2
 
 F*urther reading and optimisation*
