@@ -95,8 +95,7 @@ def chatgpt():
 
     SimilarBands = process_chatgpt_list(response)
 
-    print(f"User: {user_message}")
-    print(f"ChatGPT: {response}")
+    print(f"User: {user_message}", end="\n")
     return process_chatgpt_list(response)
     
     # Example with conversation history
@@ -201,31 +200,46 @@ def startMainLoop():
     skipValue = 1
     alreadySkipped = False
 
-    print("Key input started. Press 'd' to skip, 'q' to quit")
+    print("Key input started. Press 'd' to skip, 'q' to quit", end="\n")
 
     try:
         while True:
-            print(PlayCommand)
+            print(PlayCommand, end="\n")
             
-            if SimilarBands :
-                Playstring = SimilarBands[random.randint(0, min(20, len(SimilarBands)-1))]
+            if isinstance(SimilarBands, list) and SimilarBands :
+                Playstring = SimilarBands[random.randint(0, min(21, len(SimilarBands)-1))]
                 skipValue = random.randint(1, 15)
 
-
-
-            #working - (stream songs)
             command = (
-                "yt-dlp_linux "
+                "ffmpeg -re "
+                f"-i $(yt-dlp_linux "
                 "--match-filter \"duration > 120\" "
                 "--match-filter \"duration < 600\" "
-                "--match-filter \"view_count > 300000\" "    
+                "--match-filter \"view_count > 300000\" "
                 "--default-search ytsearch100 "
                 f"--playlist-items {skipValue} "
                 "-f \"bestaudio[ext=m4a]\" "
-                f"-g \"{Playstring}\""
-                " | xargs -I {} vlc {} --play-and-exit"
+                f"-g \"{Playstring}\") "
+                "-vn -c:a libmp3lame -b:a 128k -f mp3 "
+                "-content_type audio/mpeg "
+                "-ice_name \"My Stream\" "
+                "-ice_description \"Live Stream from yt-dlp\" "
+                "-ice_genre \"Rock\" "
+                "-legacy_icecast 1 "
+                "icecast://source:hackme@localhost:8000/stream.mp3"
             )
-
+            #working - (stream songs)
+            #command = (
+            #    "yt-dlp_linux "
+            #    "--match-filter \"duration > 120\" "
+            #    "--match-filter \"duration < 600\" "
+            #    "--match-filter \"view_count > 300000\" "    
+            #    "--default-search ytsearch100 "
+            #    f"--playlist-items {skipValue} "
+            #    "-f \"bestaudio[ext=m4a]\" "
+            #    f"-g \"{Playstring}\""
+            #    " | xargs -I {} vlc {} --play-and-exit"
+            #)
 
 
             #working - download songs
@@ -241,7 +255,6 @@ def startMainLoop():
             #                f"{Playstring}"
             # )
             #if PlayCommand in ("Play", "Stop"):
-            print(f"Playing: {command}")
             current_process = subprocess.Popen(
                 command,
                 shell=True,
@@ -262,11 +275,13 @@ def startMainLoop():
                     vlc_process = find_vlc_process()
 
                 if PlayCommand == 'Skip':
-                    print("Skipped from the browser.")
+                    print("\nSkipped from the browser.")
                     if vlc_process and vlc_process.is_running():
                         vlc_process.kill()
                     os.killpg(os.getpgid(current_process.pid), signal.SIGTERM)
-                    SimilarBands = chatgpt()
+                    SimilarBands.clear()
+                    SimilarBands.append(latestPlaystring)
+                    SimilarBands.extend(chatgpt())
                     skipValue += 1
                     setPlayCommand('Play')
                     break

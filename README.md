@@ -18,9 +18,9 @@ sudo apt install python3-psutil
 *Running from browser*
 sudo apt install apache2 php libapache2-mod-php php-sqlite3 php-pdo-sqlite
 cd /PyPlayer
-php -S localhost:8000
+php -S localhost:8080
 python3 play.py
-browse to http://localhost/play.html
+browse to http://localhost:8080/play.html
 
 *Smart randomized playlist*
 pip install openai
@@ -30,6 +30,10 @@ pipx install openai
 or
 install openai --break-system-packages
 
+*Local radio setup with Streaming to browser with icecast2*
+sudo apt install icecast2
+sudo systemctl restart icecast2
+sudo nano /etc/icecast2/icecast.xml
 
 
 F*urther reading and optimisation*
