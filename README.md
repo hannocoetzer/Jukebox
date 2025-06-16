@@ -30,7 +30,7 @@ sudo apt install python3-psutil
 ```bash
 sudo apt install apache2 php libapache2-mod-php php-sqlite3 php-pdo-sqlite
 cd /Jukebox
-php -S localhost:8080
+php -S 0.0.0.0:8080
 python3 play.py
 ```
 
