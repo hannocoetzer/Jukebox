@@ -1,11 +1,11 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html>
 <head>
 <title>Play music</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <style>
   .glyphicon {
@@ -23,61 +23,136 @@
     body {
       zoom: 300%; /* Zoom in 3x */
     }
+
+    .autoplay-notice {
+      background: #ff6b6b;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      display: none;
+    }
+
+    .click-to-play {
+      background: #4ecdc4;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+    }
   </style>
 <script>
 $(document).ready(function(){
-debugger;
-
-
 	var playCommand = "";
-	
-	
+	var audio = document.getElementById('radio');
+	var streamUrl = "http://localhost:8000/stream.mp3";
+
 	function PlayServiceUpdate()
 	{
 		var PlayString = $('#PlayString').val();
-		
+
 		var playJSON = Object();
 		playJSON.PlayString = PlayString;
-		playJSON.PlayCommand = PlayCommand;
-	 
+		playJSON.PlayCommand = playCommand;
+
 		 $.ajax({
 			url: 'func.php',
 			type: 'post',
 			data: { "PlayServiceUpdate": JSON.stringify(playJSON)},
 			success: function(response) { /*alert(response);*/ }
-		});		
+		});
 	}
 
 	$('#PlayButtton').click(function() {
-		PlayCommand = "Play";
+		playCommand = "Play";
 		PlayServiceUpdate();
+		startAudioStream();
 	});
-	
+
 	$('#StopButtton').click(function() {
-		PlayCommand = "Stop";
-		PlayServiceUpdate();		
+		playCommand = "Stop";
+		PlayServiceUpdate();
+		audio.pause();
 	});
 
 	$('#SkipButtton').click(function () {
-	    PlayCommand = "Skip";
+	    playCommand = "Skip";
 	    PlayServiceUpdate();
 	});
 
-  const audio = document.getElementById('radio');
-  const streamUrl = "http://localhost:8000/stream.mp3";
+  let reconnectAttempts = 0;
+  const maxReconnectAttempts = 10;
+  let reconnectInterval;
 
   function reloadStream() {
-    console.log("🔁 Reloading stream...");
-    // Pause, reset src with cache-busting query, reload
+    console.log("🔁 Reloading stream... (attempt " + (reconnectAttempts + 1) + ")");
+
+    // Stop any existing reconnect attempts
+    if (reconnectInterval) {
+      clearInterval(reconnectInterval);
+    }
+
+    // Pause and reset
     audio.pause();
     audio.src = streamUrl + "?t=" + new Date().getTime(); // Cache-busting
     audio.load();
-    audio.play().catch(err => console.log("⚠️ Play error:", err));
+
+    // Try to play after a short delay
+    setTimeout(() => {
+      audio.play().catch(err => {
+        console.log("⚠️ Play error:", err);
+        reconnectAttempts++;
+
+        if (reconnectAttempts < maxReconnectAttempts) {
+          console.log("⏳ Retrying in 3 seconds...");
+          setTimeout(reloadStream, 3000);
+        } else {
+          console.log("❌ Max reconnect attempts reached");
+          showAutoplayNotice();
+          reconnectAttempts = 0; // Reset for future attempts
+        }
+      });
+    }, 500);
   }
 
-  // Try to reload if the stream errors or ends
-  audio.addEventListener('error', () => {
-    console.log("⚠️ Audio error detected");
+  function startAudioStream() {
+    audio.play().catch(err => {
+      console.log("⚠️ Autoplay blocked:", err);
+      showClickToPlay();
+    });
+  }
+
+  function showAutoplayNotice() {
+    $('.autoplay-notice').show();
+  }
+
+  function showClickToPlay() {
+    $('.click-to-play').show();
+  }
+
+  // Click to play handler
+  $('.click-to-play').click(function() {
+    $(this).hide();
+    reloadStream();
+  });
+
+  // Continuous reconnection for live streams
+  function startReconnectionMonitor() {
+    reconnectInterval = setInterval(() => {
+      if (audio.paused && !audio.ended) {
+        console.log("🔄 Stream seems paused, attempting reconnect...");
+        reloadStream();
+      }
+    }, 10000); // Check every 10 seconds
+  }
+
+  // Handle stream events
+  audio.addEventListener('error', (e) => {
+    console.log("⚠️ Audio error detected:", e);
     setTimeout(reloadStream, 2000);
   });
 
@@ -87,22 +162,79 @@ debugger;
   });
 
   audio.addEventListener('ended', () => {
-    console.log("🔚 Stream ended");
-    setTimeout(reloadStream, 2000);
+    console.log("🔚 Stream ended, reconnecting...");
+    reconnectAttempts = 0; // Reset attempts for stream end
+    setTimeout(reloadStream, 1000); // Shorter delay for stream end
   });
+
+  audio.addEventListener('loadstart', () => {
+    console.log("📡 Stream loading started");
+  });
+
+  audio.addEventListener('canplay', () => {
+    console.log("✅ Stream ready to play");
+    reconnectAttempts = 0; // Reset on successful connection
+  });
+
+  audio.addEventListener('playing', () => {
+    console.log("🎵 Stream playing");
+    reconnectAttempts = 0; // Reset on successful playback
+  });
+
+  // Start monitoring after initial load
+  setTimeout(startReconnectionMonitor, 5000);
+
+  // Attempt autoplay when page loads
+  audio.addEventListener('loadeddata', () => {
+    console.log("📻 Audio loaded, attempting autoplay...");
+    startAudioStream();
+  });
+
+  // Try autoplay after a short delay
+  setTimeout(() => {
+    startAudioStream();
+  }, 1000);
+
+  // Unmute on first user interaction
+  let hasInteracted = false;
+  function unmuteOnInteraction() {
+    if (!hasInteracted) {
+      audio.muted = false;
+      hasInteracted = true;
+      console.log("🔊 Audio unmuted after user interaction");
+      // Remove event listeners after first interaction
+      document.removeEventListener('click', unmuteOnInteraction);
+      document.removeEventListener('keydown', unmuteOnInteraction);
+      document.removeEventListener('touchstart', unmuteOnInteraction);
+    }
+  }
+
+  // Listen for any user interaction to unmute
+  document.addEventListener('click', unmuteOnInteraction);
+  document.addEventListener('keydown', unmuteOnInteraction);
+  document.addEventListener('touchstart', unmuteOnInteraction);
 });
 </script>
 </head>
 <body style="background-color:#001a33;">
 	<div class="container-fluid page-top">
 	</br>
-		<div class="row">	
+
+	<div class="autoplay-notice">
+	  ⚠️ Autoplay was blocked by your browser. Click the play button to start.
+	</div>
+
+	<div class="click-to-play">
+	  🎵 Click here to start playing music
+	</div>
+
+		<div class="row">
 			<form style="padding-left:50px;padding-right:50px;">
 				<div class="form-group">
 			  <input type="text" class="form-control" id="PlayString">
 				</div>
 			</form>
-		</div>	
+		</div>
 		<div class="row" style="padding-left:40px;padding-left:50px;">
 			<button id="StopButtton" type="button"  class="icon-button">
 				<span class="glyphicon glyphicon-stop"></span>&nbsp;
@@ -114,13 +246,11 @@ debugger;
                 <span class="glyphicon glyphicon-forward"></span>&nbsp;
             </button>
 		</div>
-    <!--<audio controls autoplay>
-      <source src="http://localhost:8000/stream.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
-      </audio>-->
-     <audio id="radio" controls autoplay>
+
+     <audio id="radio" controls autoplay muted>
       <source src="http://localhost:8000/stream.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
        </audio>
 	</div>
 </body>
+</html>
