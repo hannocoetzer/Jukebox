@@ -20,6 +20,9 @@
     background: transparent;
 	color:white;
 }
+    body {
+      zoom: 300%; /* Zoom in 3x */
+    }
   </style>
 <script>
 $(document).ready(function(){
@@ -61,7 +64,7 @@ debugger;
 	});
 
   const audio = document.getElementById('radio');
-  const streamUrl = "http://192.168.0.105:8000/stream.mp3";
+  const streamUrl = "http://localhost:8000/stream.mp3";
 
   function reloadStream() {
     console.log("🔁 Reloading stream...");
@@ -93,8 +96,6 @@ debugger;
 <body style="background-color:#001a33;">
 	<div class="container-fluid page-top">
 	</br>
-	</br>
-	</br>
 		<div class="row">	
 			<form style="padding-left:50px;padding-right:50px;">
 				<div class="form-group">
@@ -118,7 +119,7 @@ debugger;
         Your browser does not support the audio element.
       </audio>-->
      <audio id="radio" controls autoplay>
-      <source src="http://192.168.0.105:8000/stream.mp3" type="audio/mpeg">
+      <source src="http://localhost:8000/stream.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
        </audio>
 	</div>
