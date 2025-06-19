@@ -2,6 +2,9 @@
 
 Stream high quality audio from YouTube
 
+
+![Game Screenshot](images/game_screen.jpg)
+
 ## Requirements
 
 - Python 3.13.2
