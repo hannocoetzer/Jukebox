@@ -102,10 +102,19 @@ sudo systemctl start avahi-daemon
 sudo systemctl restart icecast2
 ```
 
-### Optional: Set Hostname
+### Optional: open it like http://jukebox:8080/play.html 
 ```bash
 # sudo hostnamectl set-hostname Jukebox
-# sudo nano /etc/hosts
+Add jukebox to your /etc/hosts file:
+
+#sudo nano /etc/hosts
+
+Add this line (or edit an existing one):
+
+127.0.0.1   jukebox
+
+Then you can open http://jukebox:8080/play.html locally
+
 ```
 
 ## Further Reading and Optimization
