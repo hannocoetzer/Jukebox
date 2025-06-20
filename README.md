@@ -42,15 +42,10 @@ Then browse to: `http://localhost:8080/play.html`
 ## Startup with one script
 
 ```
-```
 chmod +x play.sh
 ./play
 ```
-```
-```
 
-
-```
 ## Smart Randomized Playlist
 
 Install OpenAI dependencies:
