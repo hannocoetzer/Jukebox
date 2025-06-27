@@ -27,6 +27,7 @@ Stream high quality audio from YouTube
 sudo apt install python3
 sudo apt install pip
 sudo apt install python3-psutil
+sudo apt install python3-requests
 ```
 
 ### Running from Browser

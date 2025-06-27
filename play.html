@@ -47,9 +47,15 @@
   </style>
 <script>
 $(document).ready(function(){
-	var playCommand = "";
+	var playCommand = "Play";
 	var audio = document.getElementById('radio');
-	var streamUrl = "http://localhost:8000/stream.mp3";
+  var source = document.getElementById('source');
+	var streamUrl = "http://localhost:8000/stream1.mp3";
+	var streamUrlHost = "http://localhost:8000/";
+  var lastRecord = null;
+  
+    var streamFileName = "stream";
+    var streamExt = ".mp3";
 
 	function PlayServiceUpdate()
 	{
@@ -58,6 +64,10 @@ $(document).ready(function(){
 		var playJSON = Object();
 		playJSON.PlayString = PlayString;
 		playJSON.PlayCommand = playCommand;
+    //playJSON.title = lastRecord.data.title;
+    //playJSON.duration = lastRecord.data.duration;
+    //playJSON.streamUrl = audio.src;
+
 
 		 $.ajax({
 			url: 'func.php',
@@ -67,10 +77,72 @@ $(document).ready(function(){
 		});
 	}
 
+
+  getLastRow();
+  // Function to get the last row added
+  function getLastRow() {
+
+    setInterval(() => {
+      const formData = new FormData();
+      formData.append('GetLastRow', 'true');
+      
+      fetch('func.php', {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.text())
+      .then(data => {
+          try {
+              lastRecord = JSON.parse(data);
+              if (lastRecord.success) {
+                  console.log('Last row data:', lastRecord.data);
+                  // Access the data like this:
+                  console.log('Title:', lastRecord.data.title);
+                  console.log('Duration:', lastRecord.data.duration);
+                  console.log('Stream URL:', lastRecord.data.streamUrl);
+                  console.log('Created at:', lastRecord.data.created_at);
+
+                  if(lastRecord.data.streamUrl !== '' || streamUrl !== undefined)
+                    if (lastRecord.data.streamUrl !== streamUrl) {
+
+                      // console.log("stream changed : " + lastRecord.data.streamUrl);
+                      //
+                      // // Stop the current stream
+                      // audio.pause();            // Pause playback
+                      // audio.removeAttribute('src'); // Clear the current source
+                      // audio.load();             // Force unload of previous audio
+                      //
+                      // Set the new stream
+                      streamUrl = lastRecord.data.streamUrl;
+                      reloadStream();
+                      // audio.src = streamUrl;
+                      // audio.load();             // Load the new source
+                      //
+                      // audio.play().catch(error => {
+                      //   console.error("Playback failed:", error);
+                      // });
+                    }
+
+                  // You can now use this data in your application
+                  //displayLastRow(jsonData.data);
+              } else {
+                  console.log('No data found:', lastRecord.message);
+              }
+          } catch (error) {
+              console.error('Error parsing JSON:', error);
+              console.log('Raw response:', data);
+          }
+      })
+      .catch(error => {
+          console.error('Error:', error);
+      });
+    }, 100);
+  }
 	$('#PlayButtton').click(function() {
 		playCommand = "Play";
 		PlayServiceUpdate();
-		startAudioStream();
+		//startAudioStream();
+    reloadStream();
 	});
 
 	$('#StopButtton').click(function() {
@@ -87,6 +159,7 @@ $(document).ready(function(){
   let reconnectAttempts = 0;
   const maxReconnectAttempts = 10;
   let reconnectInterval;
+  let streamNum = 1;
 
   function reloadStream() {
     console.log("🔁 Reloading stream... (attempt " + (reconnectAttempts + 1) + ")");
@@ -97,12 +170,19 @@ $(document).ready(function(){
     }
 
     // Pause and reset
-    audio.pause();
-    audio.src = streamUrl + "?t=" + new Date().getTime(); // Cache-busting
+    
+    //source.src = streamUrlHost + streamFileName + streamNum + streamExt + "?t=" + new Date().getTime(); // Cache-busting
+    //audio.src = streamCompleteUrl + "?t=" + new Date().getTime(); // Cache-busting
+    audio.src = streamUrl;
     audio.load();
 
+    //switch streamNumber for next iteration
+    streamNum = streamNum == 1 ? 2 : 1;
+    audio.pause();
     // Try to play after a short delay
     setTimeout(() => {
+
+
       audio.play().catch(err => {
         console.log("⚠️ Play error:", err);
         reconnectAttempts++;
@@ -116,7 +196,7 @@ $(document).ready(function(){
           reconnectAttempts = 0; // Reset for future attempts
         }
       });
-    }, 500);
+    }, 10000);
   }
 
   function startAudioStream() {
@@ -158,7 +238,12 @@ $(document).ready(function(){
 
   audio.addEventListener('stalled', () => {
     console.log("⏳ Audio stalled");
-    setTimeout(reloadStream, 2000);
+    setTimeout(reloadStream, 2000);                        console.log("stream changed : " + lastRecord.data.streamUrl)
+                        streamUrl = lastRecord.data.streamUrl;
+                        audio.src = streamUrl;
+                        audio.load();
+                        console.log('Stream URL changed to:', streamUrl);
+
   });
 
   audio.addEventListener('ended', () => {
@@ -239,7 +324,7 @@ $(document).ready(function(){
 		</div>
 
      <audio id="radio" controls autoplay muted>
-      <source src="http://localhost:8000/stream.mp3" type="audio/mpeg">
+      <source id="source" type="audio/mpeg">
       Your browser does not support the audio element.
        </audio>
 	</div>

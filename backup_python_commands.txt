@@ -1,0 +1,26 @@
+    # working - (stream songs)
+    # command = (
+    #    "yt-dlp_linux "
+    #    "--match-filter \"duration > 120\" "
+    #    "--match-filter \"duration < 600\" "
+    #    "--match-filter \"view_count > 300000\" "
+    #    "--default-search ytsearch100 "
+    #    f"--playlist-items {skipValue} "
+    #    "-f \"bestaudio[ext=m4a]\" "
+    #    f"-g \"{Playstring}\""
+    #    " | xargs -I {} vlc {} --play-and-exit"
+    # )
+
+    # working - download songs
+    # command = (
+    #                "yt-dlp_linux "
+    #                "--extract-audio "
+    #                "--audio-format mp3 "
+    #                "--match-filter \"duration > 120\" "
+    #                "--min-views 50000 "
+    #                "--default-search ytsearch100 "
+    #                f"--playlist-items {skipValue} "
+    #                "--exec \"vlc {} --play-and-exit\" "
+    #                f"{Playstring}"
+    # )
+    # if PlayCommand in ("Play", "Stop"):

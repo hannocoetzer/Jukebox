@@ -63,22 +63,36 @@ class NonBlockingInput:
 
     def _unix_listener(self):
         """Unix/Linux-specific key listener"""
-        # Set terminal to raw mode
+        import sys
+        import os
+
         fd = sys.stdin.fileno()
-        self.old_settings = self.termios.tcgetattr(fd)
+
+        # Check if stdin is a terminal
+        if not os.isatty(fd):
+            print("stdin is not a tty. Listener will not run.")
+            return
 
         try:
-            self.tty.setraw(sys.stdin.fileno())
+            self.old_settings = self.termios.tcgetattr(fd)
+        except self.termios.error as e:
+            print(f"Error getting terminal attributes: {e}")
+            return
+
+        try:
+            self.tty.setraw(fd)
 
             while self.running:
                 if self.select.select([sys.stdin], [], [], 0.01) == ([sys.stdin], [], []):
                     key = sys.stdin.read(1)
                     self.key_pressed = key
                 time.sleep(0.01)
+
         finally:
-            # Restore terminal settings
-            if self.old_settings:
+            # Restore terminal settings if they were saved
+            if hasattr(self, 'old_settings') and self.old_settings:
                 self.termios.tcsetattr(fd, self.termios.TCSADRAIN, self.old_settings)
+
 
     def get_key(self):
         """Get the last pressed key and clear it"""
