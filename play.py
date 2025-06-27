@@ -275,8 +275,6 @@ def startMainLoop():
 
             # Monitor the process
             while current_process.poll() is None:
-                GetSongDetail(Playstring, skipValue)
-
                 latestPlaystring = getPlayString()
                 PlayCommand = getPlayCommand()
 
@@ -288,6 +286,7 @@ def startMainLoop():
                 #     vlc_process = find_vlc_process()
 
                 if PlayCommand == "Skip":
+                    GetSongDetail(Playstring, skipValue)
                     print("\nSkipped from the browser.")
                     # if vlc_process and vlc_process.is_running():
                     #     vlc_process.kill()

@@ -50,7 +50,7 @@ $(document).ready(function(){
 	var playCommand = "Play";
 	var audio = document.getElementById('radio');
   var source = document.getElementById('source');
-	var streamUrl = "http://localhost:8000/stream1.mp3";
+	var streamUrl = "http://localhost:8000/stream.mp3";
 	var streamUrlHost = "http://localhost:8000/";
   var lastRecord = null;
   
@@ -64,10 +64,6 @@ $(document).ready(function(){
 		var playJSON = Object();
 		playJSON.PlayString = PlayString;
 		playJSON.PlayCommand = playCommand;
-    //playJSON.title = lastRecord.data.title;
-    //playJSON.duration = lastRecord.data.duration;
-    //playJSON.streamUrl = audio.src;
-
 
 		 $.ajax({
 			url: 'func.php',
@@ -102,29 +98,14 @@ $(document).ready(function(){
                   console.log('Stream URL:', lastRecord.data.streamUrl);
                   console.log('Created at:', lastRecord.data.created_at);
 
-                  if(lastRecord.data.streamUrl !== '' || streamUrl !== undefined)
-                    if (lastRecord.data.streamUrl !== streamUrl) {
+                  // !!  enable this when using play_multithreading.py
+                  // if(lastRecord.data.streamUrl !== '' || streamUrl !== undefined)
+                  //   if (lastRecord.data.streamUrl !== streamUrl) {
+                  //     // Set the new stream
+                  //     streamUrl = lastRecord.data.streamUrl;
+                  //     reloadStream();
+                  //   }
 
-                      // console.log("stream changed : " + lastRecord.data.streamUrl);
-                      //
-                      // // Stop the current stream
-                      // audio.pause();            // Pause playback
-                      // audio.removeAttribute('src'); // Clear the current source
-                      // audio.load();             // Force unload of previous audio
-                      //
-                      // Set the new stream
-                      streamUrl = lastRecord.data.streamUrl;
-                      reloadStream();
-                      // audio.src = streamUrl;
-                      // audio.load();             // Load the new source
-                      //
-                      // audio.play().catch(error => {
-                      //   console.error("Playback failed:", error);
-                      // });
-                    }
-
-                  // You can now use this data in your application
-                  //displayLastRow(jsonData.data);
               } else {
                   console.log('No data found:', lastRecord.message);
               }
@@ -169,10 +150,7 @@ $(document).ready(function(){
       clearInterval(reconnectInterval);
     }
 
-    // Pause and reset
-    
-    //source.src = streamUrlHost + streamFileName + streamNum + streamExt + "?t=" + new Date().getTime(); // Cache-busting
-    //audio.src = streamCompleteUrl + "?t=" + new Date().getTime(); // Cache-busting
+
     audio.src = streamUrl;
     audio.load();
 
